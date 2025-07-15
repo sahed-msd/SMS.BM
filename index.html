@@ -1,99 +1,85 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Chatbot</title>
-<script src="https://cdn.jsdelivr.net/npm/fuse.js@7"></script>
+<title>Enhanced Custom Chat Bot</title>
 <style>
-body {
-    font-family: sans-serif;
-    background: #121212;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-.chat-box {
-    background: #1e1e1e;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-}
-#log {
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid #333;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-input, button {
-    padding: 10px;
-    margin: 5px 0;
-    width: 100%;
-    box-sizing: border-box;
-}
-button {
-    background: #007bff;
-    color: white;
-    border: none;
-}
+    body { font-family: Arial, sans-serif; background: #f8f8f8; }
+    .chat-container { max-width: 500px; margin: 30px auto; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
+    .chat-box { height: 400px; overflow-y: auto; padding: 10px; border-bottom: 1px solid #ddd; }
+    .message { margin: 5px 0; padding: 8px 12px; border-radius: 15px; max-width: 80%; }
+    .user { background: #d1e7dd; align-self: flex-end; }
+    .bot { background: #f8d7da; align-self: flex-start; }
+    .input-container { display: flex; }
+    input[type="text"] { flex: 1; padding: 10px; border: none; border-top: 1px solid #ccc; }
+    button { padding: 10px 15px; border: none; background: #007bff; color: #fff; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .chat-box div { display: flex; }
 </style>
 </head>
 <body>
-<div class="chat-box">
-    <div id="log"></div>
-    <input type="text" id="input" placeholder="আপনার প্রশ্ন লিখুন...">
-    <button onclick="send()">পাঠান</button>
-</div>
-<script>
-const answers = [
-    { question: "python কি", answer: "Python হলো একটি প্রোগ্রামিং ভাষা।" },
-    { question: "linux কি", answer: "Linux হলো একটি ওপেন সোর্স অপারেটিং সিস্টেম।" },
-    { question: "html কি", answer: "HTML হলো ওয়েব পেজ তৈরির মার্কআপ ভাষা।" },
-];
-const fuse = new Fuse(answers, { keys: ['question'], threshold: 0.4 });
+<div class="chat-container">
+    <div class="chat-box" id="chatBox"></div>
+    <div class="input-container">
+        <input type="text" id="userInput" placeholder="Write your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div><script>
+    const predefinedAnswers = {
+        "hello": "Hello, how can I assist you today?",
+        "price": "Our current price list is available on our website.",
+        "contact": "You can contact us via email or phone.",
+        "bye": "Thank you for chatting with us. Have a great day!",
+        "  ": "  Custom Bot,    ?"
+    };
 
-async function send() {
-    const input = document.getElementById('input');
-    const text = input.value.trim();
-    if (!text) return;
-    log(`🧑‍💻 আপনি: ${text}`);
-
-    let ip = "Unknown";
-    try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        ip = data.ip;
-    } catch {}
-
-    const result = fuse.search(text);
-    let reply = "দুঃখিত, এই প্রশ্নের উত্তর আমার কাছে নেই।";
-    if (result.length > 0) reply = result[0].item.answer;
-    log(`🤖 বট: ${reply}`);
-    input.value = "";
-
-    // Send to Telegram via Worker
-    try {
-        await fetch("YOUR_CLOUDFLARE_WORKER_URL", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ip: ip, question: text })
-        });
-    } catch (e) {
-        console.error("টেলিগ্রামে পাঠাতে ব্যর্থ:", e);
+    function cleanInput(input) {
+        return input.toLowerCase().replace(/[^a-zA-Z0-9-- ]/g, '').trim();
     }
-}
 
-function log(message) {
-    const div = document.getElementById('log');
-    const p = document.createElement('p');
-    p.textContent = message;
-    div.appendChild(p);
-    div.scrollTop = div.scrollHeight;
-}
-</script>
-</body>
+    function findBestMatch(cleanedInput) {
+        for (const key in predefinedAnswers) {
+            if (cleanedInput.includes(key.toLowerCase())) {
+                return predefinedAnswers[key];
+            }
+        }
+        return null;
+    }
+
+    function sendMessage() {
+        const userInputRaw = document.getElementById('userInput').value.trim();
+        if (!userInputRaw) return;
+        appendMessage(userInputRaw, 'user');
+        sendToTelegram(userInputRaw);
+
+        const cleanedInput = cleanInput(userInputRaw);
+        const botResponse = findBestMatch(cleanedInput) || "      ";
+
+        setTimeout(() => {
+            appendMessage(botResponse, 'bot');
+        }, 500);
+
+        document.getElementById('userInput').value = '';
+    }
+
+    function appendMessage(message, sender) {
+        const chatBox = document.getElementById('chatBox');
+        const messageDiv = document.createElement('div');
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message ' + sender;
+        messageContent.textContent = message;
+        messageDiv.appendChild(messageContent);
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendToTelegram(message) {
+        const botToken = '7782525818:AAFPehgRy09k_ZH2sD-kuuAe4Xm_Oi8Myuo';
+        const chatId = '6637401273';
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+        fetch(url)
+            .then(response => console.log('Sent to Telegram'))
+            .catch(error => console.error('Telegram Error:', error));
+    }
+</script></body>
 </html>
