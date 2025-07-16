@@ -2,94 +2,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enhanced Custom Chat Bot with IP Tracking</title>
+<title>Responsive Smooth Telegram-Style Chatbot</title>
 <style>
-    body { font-family: Arial, sans-serif; background: #f8f8f8; }
-    .chat-container { max-width: 500px; margin: 30px auto; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
-    .chat-box { height: 400px; overflow-y: auto; padding: 10px; border-bottom: 1px solid #ddd; }
-    .message { margin: 5px 0; padding: 8px 12px; border-radius: 15px; max-width: 80%; }
-    .user { background: #d1e7dd; align-self: flex-end; }
-    .bot { background: #f8d7da; align-self: flex-start; }
-    .input-container { display: flex; }
-    input[type="text"] { flex: 1; padding: 10px; border: none; border-top: 1px solid #ccc; }
-    button { padding: 10px 15px; border: none; background: #007bff; color: #fff; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .chat-box div { display: flex; }
+    body { font-family: 'Segoe UI', sans-serif; background-color: #17212b; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .chat-container { background-color: #1f2a36; width: 90%; max-width: 400px; height: 80vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.3s ease; }
+    .chat-header { padding: 12px; background-color: #202c3a; display: flex; align-items: center; gap: 10px; }
+    .chat-header img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+    .chat-header div { font-weight: bold; color: #fff; font-size: 16px; }
+    .chat-box { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; scroll-behavior: smooth; }
+    .message { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; animation: fadeIn 0.3s ease; }
+    .user { background-color: #39a3ff; align-self: flex-end; color: #fff; }
+    .bot { background-color: #505f6e; align-self: flex-start; color: #fff; }
+    .input-container { display: flex; border-top: 1px solid #2f3d4c; }
+    input[type="text"] { flex: 1; padding: 12px; background-color: #2b3b4d; border: none; color: #fff; font-size: 14px; outline: none; }
+    button { background-color: #39a3ff; border: none; color: #fff; padding: 0 18px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.3s ease; }
+    button:hover { background-color: #1d8be0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
 <div class="chat-container">
+    <div class="chat-header">
+        <img src="Spycode.png" alt="Logo">
+        <div>SpyCode Bot</div>
+    </div>
     <div class="chat-box" id="chatBox"></div>
     <div class="input-container">
         <input type="text" id="userInput" placeholder="Write your message...">
         <button onclick="sendMessage()">Send</button>
     </div>
 </div><script>
-    const predefinedAnswers = {
-        "hello": "Hello, how can I assist you today?",
-        "price": "Our current price list is available on our website.",
-        "contact": "You can contact us via email or phone.",
-        "bye": "Thank you for chatting with us. Have a great day!",
-        "আপনার নাম কি": "আমার নাম Custom Bot, কীভাবে সাহায্য করতে পারি?"
+const predefinedAnswers = {
+    "রোজা": "রোজা বা সিয়াম ইসলামের একটি গুরুত্বপূর্ণ ইবাদত।",
+    "hello": "Hello, how can I assist you today?",
+    "price": "Our current price list is available on our website.",
+    "contact": "You can contact us via email or phone.",
+    "bye": "Thank you for chatting with us. Have a great day!"
+};
+
+function cleanInput(input) {
+    return input.toLowerCase().replace(/[^a-zA-Z0-9অ-হা-৳ ]/g, '').trim();
+}
+
+function correctSpelling(input) {
+    const corrections = {
+        "রজা": "রোজা",
+        "রুজা": "রোজা",
+        "rozha": "রোজা",
+        "roja": "রোজা",
+        "roza": "রোজা"
     };
+    return corrections[input] || input;
+}
 
-    function cleanInput(input) {
-        return input.toLowerCase().replace(/[^a-zA-Z0-9অ-হা-৳ ]/g, '').trim();
-    }
-
-    function findBestMatch(cleanedInput) {
-        for (const key in predefinedAnswers) {
-            if (cleanedInput.includes(key.toLowerCase())) {
-                return predefinedAnswers[key];
-            }
+function findBestMatch(input) {
+    input = correctSpelling(input);
+    for (const key in predefinedAnswers) {
+        if (input.includes(key.toLowerCase())) {
+            return predefinedAnswers[key];
         }
-        return null;
     }
+    return null;
+}
 
-    function sendMessage() {
-        const userInputRaw = document.getElementById('userInput').value.trim();
-        if (!userInputRaw) return;
-        appendMessage(userInputRaw, 'user');
+function sendMessage() {
+    const userInputRaw = document.getElementById('userInput').value.trim();
+    if (!userInputRaw) return;
+    appendMessage(userInputRaw, 'user');
 
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                const userIP = data.ip;
-                sendToTelegram(userInputRaw, userIP);
-            })
-            .catch(() => {
-                sendToTelegram(userInputRaw, 'IP_FETCH_FAILED');
-            });
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+            const userIP = data.ip;
+            sendToTelegram(userInputRaw, userIP);
+        })
+        .catch(() => {
+            sendToTelegram(userInputRaw, 'IP_FETCH_FAILED');
+        });
 
-        const cleanedInput = cleanInput(userInputRaw);
-        const botResponse = findBestMatch(cleanedInput) || "আপনার প্রশ্নটি পেয়েছি। শীঘ্রই উত্তর দেওয়া হবে।";
+    const cleanedInput = cleanInput(userInputRaw);
+    const correctedInput = correctSpelling(cleanedInput);
+    const botResponse = findBestMatch(correctedInput) || "আপনার প্রশ্নটি পেয়েছি। শীঘ্রই উত্তর দেওয়া হবে।";
 
-        setTimeout(() => {
-            appendMessage(botResponse, 'bot');
-        }, 500);
+    setTimeout(() => {
+        appendMessage(botResponse, 'bot');
+    }, 300);
 
-        document.getElementById('userInput').value = '';
-    }
+    document.getElementById('userInput').value = '';
+}
 
-    function appendMessage(message, sender) {
-        const chatBox = document.getElementById('chatBox');
-        const messageDiv = document.createElement('div');
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message ' + sender;
-        messageContent.textContent = message;
-        messageDiv.appendChild(messageContent);
-        chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+function appendMessage(message, sender) {
+    const chatBox = document.getElementById('chatBox');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ' + sender;
+    messageDiv.textContent = message;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-    function sendToTelegram(message, ip) {
-        const botToken = '7782525818:AAFPehgRy09k_ZH2sD-kuuAe4Xm_Oi8Myuo';
-        const chatId = '6637401273';
-        const textToSend = `User Message: ${message}\nUser IP: ${ip}`;
-        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(textToSend)}`;
-        fetch(url)
-            .then(response => console.log('Sent to Telegram'))
-            .catch(error => console.error('Telegram Error:', error));
-    }
+function sendToTelegram(message, ip) {
+    const botToken = '7782525818:AAFPehgRy09k_ZH2sD-kuuAe4Xm_Oi8Myuo';
+    const chatId = '6637401273';
+    const textToSend = `User Message: ${message}\nUser IP: ${ip}`;
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(textToSend)}`;
+    fetch(url)
+        .then(response => console.log('Sent to Telegram'))
+        .catch(error => console.error('Telegram Error:', error));
+}
 </script></body>
 </html>
