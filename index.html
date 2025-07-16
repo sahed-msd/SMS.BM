@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enhanced Custom Chat Bot</title>
+<title>Enhanced Custom Chat Bot with IP Tracking</title>
 <style>
     body { font-family: Arial, sans-serif; background: #f8f8f8; }
     .chat-container { max-width: 500px; margin: 30px auto; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
@@ -30,11 +30,11 @@
         "price": "Our current price list is available on our website.",
         "contact": "You can contact us via email or phone.",
         "bye": "Thank you for chatting with us. Have a great day!",
-        "  ": "  Custom Bot,    ?"
+        "আপনার নাম কি": "আমার নাম Custom Bot, কীভাবে সাহায্য করতে পারি?"
     };
 
     function cleanInput(input) {
-        return input.toLowerCase().replace(/[^a-zA-Z0-9-- ]/g, '').trim();
+        return input.toLowerCase().replace(/[^a-zA-Z0-9অ-হা-৳ ]/g, '').trim();
     }
 
     function findBestMatch(cleanedInput) {
@@ -50,10 +50,19 @@
         const userInputRaw = document.getElementById('userInput').value.trim();
         if (!userInputRaw) return;
         appendMessage(userInputRaw, 'user');
-        sendToTelegram(userInputRaw);
+
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                const userIP = data.ip;
+                sendToTelegram(userInputRaw, userIP);
+            })
+            .catch(() => {
+                sendToTelegram(userInputRaw, 'IP_FETCH_FAILED');
+            });
 
         const cleanedInput = cleanInput(userInputRaw);
-        const botResponse = findBestMatch(cleanedInput) || "      ";
+        const botResponse = findBestMatch(cleanedInput) || "আপনার প্রশ্নটি পেয়েছি। শীঘ্রই উত্তর দেওয়া হবে।";
 
         setTimeout(() => {
             appendMessage(botResponse, 'bot');
@@ -73,10 +82,11 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function sendToTelegram(message) {
+    function sendToTelegram(message, ip) {
         const botToken = '7782525818:AAFPehgRy09k_ZH2sD-kuuAe4Xm_Oi8Myuo';
         const chatId = '6637401273';
-        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+        const textToSend = `User Message: ${message}\nUser IP: ${ip}`;
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(textToSend)}`;
         fetch(url)
             .then(response => console.log('Sent to Telegram'))
             .catch(error => console.error('Telegram Error:', error));
